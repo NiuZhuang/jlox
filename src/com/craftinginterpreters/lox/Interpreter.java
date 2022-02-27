@@ -1,11 +1,18 @@
 package com.craftinginterpreters.lox;
-import com.craftinginterpreters.lox.Expr.*;
 
-public class Interpreter implements Expr.Visitor<Object> {
-    void interprete(Expr expression){
+import java.util.List;
+import com.craftinginterpreters.lox.Expr.*;
+import com.craftinginterpreters.lox.Stmt.*;
+
+class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
+
+    private Environment environment = new Environment();
+
+    void interpret(List<Stmt> statements) {
         try {
-            Object value = evaluate(expression);
-            System.out.println(stringify(value));
+            for (Stmt statement : statements) {
+                excute(statement);
+            }
         } catch (RuntimeError e) {
             Lox.runtimeError(e);
         }
@@ -43,7 +50,8 @@ public class Interpreter implements Expr.Visitor<Object> {
                 if (left instanceof String && right instanceof String) {
                     return (String) left + (String) right;
                 }
-                throw new RuntimeError(expr.operator, "Operands must be two strings or two numbers.");
+                throw new RuntimeError(expr.operator,
+                        "Operands must be two strings or two numbers.");
             case SLASH:
                 checkNumberOperands(expr.operator, left, right);
                 return (double) left / (double) right;
@@ -77,6 +85,47 @@ public class Interpreter implements Expr.Visitor<Object> {
         return null;
     }
 
+    @Override
+    public Void visitExpressionStmt(Expression stmt) {
+        evaluate(stmt.expression);
+        return null;
+    }
+
+    @Override
+    public Void visitPrintStmt(Print stmt) {
+        Object value = evaluate(stmt.expression);
+        System.out.println(stringify(value));
+        return null;
+    }
+
+    @Override
+    public Void visitVarStmt(Var stmt) {
+        Object value = null;
+        if (stmt.initializer != null) {
+            value = evaluate(stmt.initializer);
+        }
+        environment.define(stmt.name.lexeme, value);
+        return null;
+    }
+
+    @Override
+    public Object visitVariableExpr(Variable expr) {
+        return environment.get(expr.name);
+    }
+
+    @Override
+    public String visitAssignExpr(Assign expr) {
+        Object value = evaluate(expr.value);
+        environment.assign(expr.name, value);
+        return null;
+    }
+
+    @Override
+    public Void visitBlockStmt(Block stmt) {
+        executeBlock(stmt.statements, new Environment(environment));
+        return null;
+    }
+
     private void checkNumberOperand(Token operator, Object operand) {
         if (operand instanceof Double) {
             return;
@@ -95,6 +144,24 @@ public class Interpreter implements Expr.Visitor<Object> {
         return expr.accept(this);
     }
 
+    private void excute(Stmt statement) {
+        statement.accept(this);
+    }
+
+    private void executeBlock(List<Stmt> statements, Environment environment) {
+        Environment previous = this.environment;
+        try {
+            this.environment = environment;
+            for (Stmt statement : statements) {
+                excute(statement);
+            }
+        } catch (Exception e) {
+            // TODO: handle exception
+        } finally {
+            this.environment = previous;
+        }
+    }
+
     private boolean isTruthy(Object object) {
         if (object == null) {
             return false;
@@ -109,17 +176,18 @@ public class Interpreter implements Expr.Visitor<Object> {
         if (a == null && b == null) {
             return true;
         }
-        if(a == null) return false;
+        if (a == null)
+            return false;
         return a.equals(b);
     }
 
     private String stringify(Object object) {
-        if(object == null) {
+        if (object == null) {
             return "nil";
         }
-        if(object instanceof Double) {
-            String text  = object.toString();
-            if(text.endsWith(".0")) {
+        if (object instanceof Double) {
+            String text = object.toString();
+            if (text.endsWith(".0")) {
                 text = text.substring(0, text.length() - 2);
             }
             return text;

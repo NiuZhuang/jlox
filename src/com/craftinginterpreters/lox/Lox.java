@@ -55,15 +55,15 @@ public class Lox {
 
     Parser parser = new Parser(tokens);
 
-    Expr expression = parser.parse();
-
+    // Expr expression = parser.parse();
+    List<Stmt> statements = parser.parse();
 
     // Stop if there was a syntax error.
     if (hadError)
       return;
 
     // System.out.println(new AstPrinter().print(expression));
-    interpreter.interprete(expression);
+    interpreter.interpret(statements);
 
     // For now, just print the tokens.
     // for (Token token : tokens) {
