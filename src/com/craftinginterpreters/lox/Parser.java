@@ -68,14 +68,10 @@ class Parser {
         return statements;
     }
 
-    private Expr expression() {
-        return assignment();
-    }
-
     private Stmt declaration() {
         try {
             if (match(VAR)) {
-                return varDeclearation();
+                return varDeclaration();
             }
             return statement();
         } catch (Exception e) {
@@ -103,7 +99,7 @@ class Parser {
         return expressionStatement();
     }
 
-    private Stmt varDeclearation() {
+    private Stmt varDeclaration() {
         Token name = consume(IDENTIFIER, "Expect variable name.");
 
         Expr initializer = null;
@@ -115,12 +111,12 @@ class Parser {
     }
 
     private Stmt ifStatement() {
-        consume(SEMICOLON, "Expect '(' after if.");
+        consume(LEFT_PAREN, "Expect '(' after if.");
         Expr condition = expression();
         consume(RIGHT_PAREN, "Expect ')' after if condition.");
 
         Stmt thenBranch = statement();
-        Stmt elseBranch = statement();
+        Stmt elseBranch = null;
         if (match(ELSE)) {
             elseBranch = statement();
         }
@@ -134,7 +130,7 @@ class Parser {
         if (match(SEMICOLON)) {
             initializer = null;
         } else if (match(VAR)) {
-            initializer = varDeclearation();
+            initializer = varDeclaration();
         } else {
             initializer = expressionStatement();
         }
@@ -149,8 +145,7 @@ class Parser {
         if (!check(RIGHT_PAREN)) {
             increment = expression();
         }
-
-        consume(RIGHT_PAREN, "Expect ')' after for clause.");
+        consume(RIGHT_PAREN, "Expect ')' after for clauses.");
 
         Stmt body = statement();
 
@@ -158,9 +153,8 @@ class Parser {
             body = new Stmt.Block(Arrays.asList(body, new Stmt.Expression(increment)));
         }
 
-        if (condition == null) {
+        if (condition == null)
             condition = new Expr.Literal(true);
-        }
         body = new Stmt.While(condition, body);
 
         if (initializer != null) {
@@ -173,9 +167,8 @@ class Parser {
     private Stmt whileStatement() {
         consume(LEFT_PAREN, "Expect '(' after 'while'.");
         Expr condition = expression();
-        consume(RIGHT_PAREN, "Expect ')' after 'condition'.");
+        consume(RIGHT_PAREN, "Expect ')' after condition.");
         Stmt body = statement();
-
         return new Stmt.While(condition, body);
     }
 
@@ -199,6 +192,10 @@ class Parser {
 
         consume(RIGHT_BRACE, "Expect '}' after block.");
         return statements;
+    }
+
+    private Expr expression() {
+        return assignment();
     }
 
     private Expr assignment() {
