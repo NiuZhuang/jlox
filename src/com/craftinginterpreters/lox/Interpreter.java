@@ -199,7 +199,7 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
             return false;
         }
         if (object instanceof Boolean) {
-            return false;
+            return (boolean)object;
         }
         return true;
     }

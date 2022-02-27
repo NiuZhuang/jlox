@@ -74,7 +74,7 @@ class Parser {
                 return varDeclaration();
             }
             return statement();
-        } catch (Exception e) {
+        } catch (ParseError e) {
             synchronize();
             return null;
         }
