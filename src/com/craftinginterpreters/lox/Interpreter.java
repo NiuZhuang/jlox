@@ -11,7 +11,7 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     void interpret(List<Stmt> statements) {
         try {
             for (Stmt statement : statements) {
-                excute(statement);
+                execute(statement);
             }
         } catch (RuntimeError e) {
             Lox.runtimeError(e);
@@ -73,6 +73,19 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     }
 
     @Override
+    public Object visitLogicalExpr(Logical expr) {
+        Object left = evaluate(expr.left);
+        if (expr.operator.type == TokenType.OR) {
+            if (isTruthy(left))
+                return left;
+        } else {
+            if (!isTruthy(left))
+                return left;
+        }
+        return evaluate(expr.right);
+    }
+
+    @Override
     public Object visitUnaryExpr(Unary expr) {
         Object right = evaluate(expr.right);
         switch (expr.operator.type) {
@@ -86,8 +99,30 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     }
 
     @Override
+    public Object visitVariableExpr(Variable expr) {
+        return environment.get(expr.name);
+    }
+
+    @Override
+    public String visitAssignExpr(Assign expr) {
+        Object value = evaluate(expr.value);
+        environment.assign(expr.name, value);
+        return null;
+    }
+
+    @Override
     public Void visitExpressionStmt(Expression stmt) {
         evaluate(stmt.expression);
+        return null;
+    }
+
+    @Override
+    public Void visitIfStmt(If stmt) {
+        if (isTruthy(evaluate(stmt.condition))) {
+            execute(stmt.thenBranch);
+        } else {
+            execute(stmt.elseBranch);
+        }
         return null;
     }
 
@@ -109,20 +144,16 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     }
 
     @Override
-    public Object visitVariableExpr(Variable expr) {
-        return environment.get(expr.name);
-    }
-
-    @Override
-    public String visitAssignExpr(Assign expr) {
-        Object value = evaluate(expr.value);
-        environment.assign(expr.name, value);
+    public Void visitBlockStmt(Block stmt) {
+        executeBlock(stmt.statements, new Environment(environment));
         return null;
     }
 
     @Override
-    public Void visitBlockStmt(Block stmt) {
-        executeBlock(stmt.statements, new Environment(environment));
+    public Void visitWhileStmt(While stmt) {
+        while (isTruthy(evaluate(stmt.condition))) {
+            execute(stmt.body);
+        }
         return null;
     }
 
@@ -144,7 +175,7 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         return expr.accept(this);
     }
 
-    private void excute(Stmt statement) {
+    private void execute(Stmt statement) {
         statement.accept(this);
     }
 
@@ -153,10 +184,8 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         try {
             this.environment = environment;
             for (Stmt statement : statements) {
-                excute(statement);
+                execute(statement);
             }
-        } catch (Exception e) {
-            // TODO: handle exception
         } finally {
             this.environment = previous;
         }
