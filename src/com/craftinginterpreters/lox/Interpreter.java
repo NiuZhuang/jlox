@@ -104,10 +104,10 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     }
 
     @Override
-    public String visitAssignExpr(Assign expr) {
+    public Object visitAssignExpr(Assign expr) {
         Object value = evaluate(expr.value);
         environment.assign(expr.name, value);
-        return null;
+        return value;
     }
 
     @Override
@@ -120,7 +120,7 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     public Void visitIfStmt(If stmt) {
         if (isTruthy(evaluate(stmt.condition))) {
             execute(stmt.thenBranch);
-        } else if(stmt.elseBranch != null) {
+        } else if (stmt.elseBranch != null) {
             execute(stmt.elseBranch);
         }
         return null;
@@ -157,7 +157,6 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
             } catch (Exception e) {
                 break;
             }
-            
         }
         return null;
     }
@@ -170,9 +169,8 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     }
 
     private void checkNumberOperands(Token operator, Object left, Object right) {
-        if (left instanceof Double) {
+        if (left instanceof Double && right instanceof Double)
             return;
-        }
         throw new RuntimeError(operator, "Operands must be numbers.");
     }
 
@@ -210,8 +208,9 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         if (a == null && b == null) {
             return true;
         }
-        if (a == null)
+        if (a == null) {
             return false;
+        }
         return a.equals(b);
     }
 
