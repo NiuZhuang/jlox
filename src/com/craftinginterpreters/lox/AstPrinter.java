@@ -59,4 +59,10 @@ class AstPrinter implements Expr.Visitor<String> {
         // TODO Auto-generated method stub
         return null;
     }
+
+    @Override
+    public String visitCallExpr(Call expr) {
+        // TODO Auto-generated method stub
+        return null;
+    }
 }

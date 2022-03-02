@@ -12,7 +12,8 @@ _Crafting Intepreters_ 书中创造的教学语言。
 
 命令：
 - `just build`: 编译
-- `just run`: 运行 Lox 语言
+- `just run`: 运行 Lox 语言命令行
+- `just run script/func.lox`: 运行 Lox 语言脚本文件
 
 ### 其他参考项目:
 [jlox](https://github.com/ryanq/jlox)

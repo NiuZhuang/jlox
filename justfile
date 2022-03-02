@@ -16,5 +16,5 @@ clean:
 bin:
     @mkdir -p bin/lox
 
-run: 
-   java -cp bin/lox com.craftinginterpreters.lox.Lox
+run path='': 
+   java -cp bin/lox com.craftinginterpreters.lox.Lox {{path}}
