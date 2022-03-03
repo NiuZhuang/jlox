@@ -2,6 +2,8 @@ package com.craftinginterpreters.lox;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 import com.craftinginterpreters.lox.Expr.*;
 import com.craftinginterpreters.lox.Stmt.*;
 
@@ -9,20 +11,23 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
     final Environment globals = new Environment();
     private Environment environment = globals;
+    private final Map<Expr, Integer> locals = new HashMap<>();
 
-    Interpreter(){
+    Interpreter() {
         globals.define("clock", new LoxCallable() {
 
             @Override
-            public int arity() { return 0; }
+            public int arity() {
+                return 0;
+            }
 
             @Override
             public Object call(Interpreter interpreter, List<Object> arguments) {
                 return (double) System.currentTimeMillis() / 1000.0;
             }
-            
+
             @Override
-            public String toString(){
+            public String toString() {
                 return "<native fn>";
             }
         });
@@ -120,13 +125,29 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
     @Override
     public Object visitVariableExpr(Variable expr) {
-        return environment.get(expr.name);
+        // return environment.get(expr.name);
+        return lookupVariable(expr.name, expr);
+    }
+
+    private Object lookupVariable(Token name, Expr expr) {
+        Integer distance = locals.get(expr);
+        if(distance != null){
+            return environment.getAt(distance, name.lexeme);
+        } else {
+            return globals.get(name);
+        }
     }
 
     @Override
     public Object visitAssignExpr(Assign expr) {
         Object value = evaluate(expr.value);
-        environment.assign(expr.name, value);
+        Integer distance = locals.get(expr);
+        if(distance != null){
+            environment.assignAt(distance, expr.name, value);
+        } else {
+            globals.assign(expr.name, value);
+        }
+        // environment.assign(expr.name, value);
         return value;
     }
 
@@ -184,21 +205,22 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     @Override
     public Object visitCallExpr(Call expr) {
         Object calle = evaluate(expr.callee);
-        
+
         List<Object> arguments = new ArrayList<>();
 
         for (Expr argument : expr.arguments) {
             arguments.add(evaluate(argument));
         }
 
-        if(!(calle instanceof LoxCallable)) {
+        if (!(calle instanceof LoxCallable)) {
             throw new RuntimeError(expr.paren, "Can only call functions and classes.");
         }
 
         LoxCallable function = (LoxCallable) calle;
 
-        if(arguments.size() != function.arity()) {
-            throw new RuntimeError(expr.paren, "Expected " + function.arity() + " arguments but got " + arguments.size() + ".");
+        if (arguments.size() != function.arity()) {
+            throw new RuntimeError(expr.paren, "Expected " + function.arity()
+                    + " arguments but got " + arguments.size() + ".");
         }
 
         return function.call(this, arguments);
@@ -215,7 +237,7 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     @Override
     public Void visitReturnStmt(Stmt.Return stmt) {
         Object value = null;
-        if(stmt.value != null){
+        if (stmt.value != null) {
             value = evaluate(stmt.value);
         }
         throw new Return(value);
@@ -242,6 +264,10 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         statement.accept(this);
     }
 
+    void resolve(Expr expr, int depth) {
+        locals.put(expr, depth);
+    }
+
     void executeBlock(List<Stmt> statements, Environment environment) {
         Environment previous = this.environment;
         try {
@@ -259,7 +285,7 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
             return false;
         }
         if (object instanceof Boolean) {
-            return (boolean)object;
+            return (boolean) object;
         }
         return true;
     }
