@@ -102,6 +102,8 @@ class Scanner {
           // A comment goes until the end of the line.
           while (peek() != '\n' && !isAtEnd())
             advance();
+        } else if (match('*')) {
+          blockComment();
         } else {
           addToken(SLASH);
         }
@@ -195,6 +197,23 @@ class Scanner {
   private void addToken(TokenType type, Object literal) {
     String text = source.substring(start, current);
     tokens.add(new Token(type, text, literal, line));
+  }
+
+  private void blockComment() {
+    while (!isAtEnd()) {
+      char c = advance();
+      switch (c) {
+        case '*':
+          if (match('/')) {
+            return;
+          }
+        case '\n':
+          line++;
+          break;
+        default:
+          break;
+      }
+    }
   }
 
   private void string() {

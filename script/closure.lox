@@ -11,3 +11,7 @@ var counter = makeCounter();
 counter();
 counter();
 counter();
+
+/* 
+* print 1; 
+*/

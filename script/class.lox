@@ -1,7 +1,15 @@
-class Bacon {
+class Breakfast {
+    init(meat, bread){
+        this.meat = meat;
+        this.bread = bread;
+    }
+    serve(who){
+        print "Enjoy your" + this.meat + " and " + this.bread + ", " + who + ".";
+    }
     eat(){
         print "Crunch crunch crunch!";
     }
 }
 
-Bacon().eat();
+var baconAndToast = Breakfast("bacon", "toast");
+baconAndToast.serve("Dear");
