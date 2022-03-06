@@ -19,7 +19,6 @@ public class Lox {
       System.out.println("Usage: jlox [script]");
       System.exit(64);
     } else if (args.length == 1) {
-      System.out.println("Params: jlox file path: " + args[0]);
       runFile(args[0]);
     } else {
       runPrompt();
@@ -67,14 +66,14 @@ public class Lox {
     resolver.resolve(statements);
 
     if (hadError)
-    return;
+      return;
 
     // System.out.println(new AstPrinter().print(expression));
     interpreter.interpret(statements);
 
     // For now, just print the tokens.
     // for (Token token : tokens) {
-    //   System.out.println(token);
+    // System.out.println(token);
     // }
   }
 
