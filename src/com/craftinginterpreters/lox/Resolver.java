@@ -125,14 +125,14 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
 
     @Override
     public Void visitClassStmt(Stmt.Class stmt) {
-        ClassType enclosingClass = currentClass;
-        currentClass = ClassType.CLASS;
-
         declare(stmt.name);
         define(stmt.name);
 
+        ClassType enclosingClass = currentClass;
+        currentClass = ClassType.CLASS;
+
         beginScope();
-        scopes.peek().put("this", false);
+        scopes.peek().put("this", true);
 
         for (Stmt.Function method : stmt.methods) {
             FunctionType declaration = FunctionType.METHOD;
