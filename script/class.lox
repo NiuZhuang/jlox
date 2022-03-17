@@ -4,12 +4,16 @@ class Breakfast {
         this.bread = bread;
     }
     serve(who){
-        print "Enjoy your" + this.meat + " and " + this.bread + ", " + who + ".";
+        print "Enjoy your " + this.meat + " and " + this.bread + ", " + who + ".";
     }
     eat(){
         print "Crunch crunch crunch!";
     }
+    sayHi(){
+        print this;
+    }
 }
 
 var baconAndToast = Breakfast("bacon", "toast");
-baconAndToast.serve("Dear");
+baconAndToast.sayHi();
+baconAndToast.serve("Sir");

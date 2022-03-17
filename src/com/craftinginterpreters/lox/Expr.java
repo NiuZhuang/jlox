@@ -26,6 +26,7 @@ abstract class Expr {
 
         R visitVariableExpr(Variable expr);
     }
+
     static class Assign extends Expr {
         Assign(Token name, Expr value) {
             this.name = name;
@@ -40,6 +41,7 @@ abstract class Expr {
         final Token name;
         final Expr value;
     }
+
     static class Binary extends Expr {
         Binary(Expr left, Token operator, Expr right) {
             this.left = left;
@@ -56,6 +58,7 @@ abstract class Expr {
         final Token operator;
         final Expr right;
     }
+
     static class Call extends Expr {
         Call(Expr callee, Token paren, List<Expr> arguments) {
             this.callee = callee;
@@ -72,6 +75,7 @@ abstract class Expr {
         final Token paren;
         final List<Expr> arguments;
     }
+
     static class Get extends Expr {
         Get(Expr object, Token name) {
             this.object = object;
@@ -86,6 +90,7 @@ abstract class Expr {
         final Expr object;
         final Token name;
     }
+
     static class Grouping extends Expr {
         Grouping(Expr expression) {
             this.expression = expression;
@@ -98,6 +103,7 @@ abstract class Expr {
 
         final Expr expression;
     }
+
     static class Logical extends Expr {
         Logical(Expr left, Token operator, Expr right) {
             this.left = left;
@@ -114,6 +120,7 @@ abstract class Expr {
         final Token operator;
         final Expr right;
     }
+
     static class Literal extends Expr {
         Literal(Object value) {
             this.value = value;
@@ -126,6 +133,7 @@ abstract class Expr {
 
         final Object value;
     }
+
     static class Set extends Expr {
         Set(Expr object, Token name, Expr value) {
             this.object = object;
@@ -142,6 +150,7 @@ abstract class Expr {
         final Token name;
         final Expr value;
     }
+
     static class This extends Expr {
         This(Token keyword) {
             this.keyword = keyword;
@@ -154,6 +163,7 @@ abstract class Expr {
 
         final Token keyword;
     }
+
     static class Unary extends Expr {
         Unary(Token operator, Expr right) {
             this.operator = operator;
@@ -168,6 +178,7 @@ abstract class Expr {
         final Token operator;
         final Expr right;
     }
+
     static class Variable extends Expr {
         Variable(Token name) {
             this.name = name;
