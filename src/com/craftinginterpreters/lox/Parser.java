@@ -14,7 +14,7 @@ import static com.craftinginterpreters.lox.TokenType.*;
 // | varDecl
 // | statement ;
 
-// classDecl → "class" IDENTIFIER "{" function* "}" ;
+// classDecl → "class" IDENTIFIER ("<" IDENTIFIER)? "{" function* "}" ;
 
 // funDecl → "fun" function ;
 // function → IDENTIFIER "(" parameters? ")" block ;
@@ -53,10 +53,9 @@ import static com.craftinginterpreters.lox.TokenType.*;
 // factor → unary ( ( "/" | "*" ) unary )* ;
 // unary → ( "!" | "-" ) unary | call ;
 // call → primary ( "(" arguments? ")" | "." IDENTIFIER )*;
-// primary → "true" | "false" | "nil"
-// | NUMBER | STRING
-// | "(" expression ")"
-// | IDENTIFIER ;
+// primary → "true" | "false" | "nil" | "this"
+// | NUMBER | STRING | IDENTIFIER | "(" expression ")"
+// | "super" "." IDENTIFIER ;
 // arguments → expression ( "," expression )* ;
 
 // -------------------------------------------------
@@ -122,6 +121,14 @@ class Parser {
 
     private Stmt classDeclaration() {
         Token name = consume(IDENTIFIER, "Expect class name");
+
+        Expr.Variable superclass = null;
+
+        if (match(LESS)) {
+            consume(IDENTIFIER, "Expect superclass name");
+            superclass = new Expr.Variable(previous());
+        }
+
         consume(LEFT_BRACE, "Expect '{' before class body");
 
         List<Stmt.Function> methods = new ArrayList<>();
@@ -131,7 +138,7 @@ class Parser {
 
         consume(RIGHT_BRACE, "Expect '}' after class body");
 
-        return new Stmt.Class(name, methods);
+        return new Stmt.Class(name, superclass, methods);
     }
 
     private Stmt varDeclaration() {
@@ -406,6 +413,13 @@ class Parser {
 
         if (match(NUMBER, STRING)) {
             return new Expr.Literal(previous().literal);
+        }
+
+        if (match(SUPER)) {
+            Token keyword = previous();
+            consume(DOT, "Expect '.' after 'super'.");
+            Token method = consume(IDENTIFIER, "Expect superclass method name.");
+            return new Expr.Super(keyword, method);
         }
 
         if (match(THIS)) {

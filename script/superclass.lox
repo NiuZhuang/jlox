@@ -1,0 +1,11 @@
+class Bird {
+    fly(){
+        print "Bird is flying now!";
+    }
+}
+
+class Eagle < Bird {
+
+}
+
+Eagle().fly();
